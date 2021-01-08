@@ -3,4 +3,6 @@ requests
 numpy
 future
 deprecated
+alfred-py
 onnxruntime
+tabulate

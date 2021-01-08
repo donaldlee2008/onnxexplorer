@@ -23,7 +23,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='onnxexplorer',
-      version='0.1.0',
+      version='0.1.2',
       keywords=['deep learning', 'script helper', 'tools'],
       description='''
       Explorer for ONNX.
@@ -36,7 +36,6 @@ setup(name='onnxexplorer',
           'onnxexplorer',
           'onnxexplorer.proto',
       ],
-      # package_dir={'alfred': 'alfred'},
       entry_points={
           'console_scripts': [
               'onnxexp = onnxexplorer.onnxexplorer:main'
@@ -47,5 +46,6 @@ setup(name='onnxexplorer',
       author_email="jinfagang19@163.com",
       url='https://github.com/jinfagang/onnxexplorer',
       platforms='any',
-      install_requires=['colorama', 'requests', 'numpy', 'future', 'deprecated', 'onnxruntime']
+      install_requires=['colorama', 'requests', 'numpy', 'future',
+                        'deprecated', 'alfred-py', 'onnxruntime', 'tabulate']
       )

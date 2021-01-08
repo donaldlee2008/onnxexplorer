@@ -25,15 +25,21 @@ such as those operations:
 import os
 import sys
 import argparse
-import onnxruntime as ort
 import onnx
-# import onnx
-# from onnx.onnx_ml_pb2 import ModelProto
-from .proto.onnx_ml_pb2 import ModelProto, TensorProto, NodeProto
+from onnx import ModelProto, TensorProto, NodeProto
 from typing import Optional, cast, Text, IO
 from google import protobuf
 from colorama import init, Fore, Style, Back
 from .core import *
+
+from alfred.utils.log import logger as logging
+try:
+    import onnxruntime as ort
+except ImportError:
+    logging.error(
+        'onnxexp needs onnxruntime, you need install onnxruntime first.')
+    exit(0)
+
 init()
 
 
@@ -43,20 +49,30 @@ class ONNXExplorer(object):
         parser = argparse.ArgumentParser(
             description='ONNX Explorer',
             usage='''onnxexp <command> [<args>]
-
+version: v0.1.3
+author: Lucas Jin @wechat: jintianiloveu
 The most commonly used onnxexp commands are:
    ls          ls all model nodes
    search      search and print out certain commands
    summary     print out model summary
+   check       check a model is valid or not
 
 i.e.:
-onnxexp model.onnx search -t 'Slice'
-onnxexp model.onnx search -n '342654'
-onnxexp model.onnx ls -hl
-onnxexp model.onnx ls
+onnxexp search model.onnx -t 'Slice'
+onnxexp search model.onnx -n '342654'
+onnxexp ls model.onnx  -hl
+onnxexp ls model.onnx 
+onnxexp check model.onnx
+onnxexp summary model.onnx
+
 ''')
         parser.add_argument('model', help='model path')
         parser.add_argument('command', help='Subcommand to run')
+        if len(sys.argv) < 3:
+            parser.print_help()
+            logging.info(
+                'onnxexp need a command to run after the model file. see usage above.')
+            exit(0)
         args = parser.parse_args(sys.argv[1:3])
         self.model_path = args.model
         if args.model != None and os.path.exists(args.model):
@@ -66,7 +82,7 @@ onnxexp model.onnx ls
             self.model_proto = onnx.load(self.model_path)
             if not hasattr(self, args.command):
                 # summary
-                print('unrecognized command.')
+                print('unrecognized command. -h for details.')
                 exit(1)
             # use dispatch pattern to invoke method with same name
             getattr(self, args.command)()
@@ -89,7 +105,7 @@ onnxexp model.onnx ls
 
     def search(self):
         parser = argparse.ArgumentParser(
-            description='Download objects and refs from another repository')
+            description='search model node by name or type')
         # NOT prefixing the argument with -- means it's not optional
         parser.add_argument('--name', '-n', help='name of to search node')
         parser.add_argument('--type', '-t', help='type of to search node')
@@ -103,6 +119,19 @@ onnxexp model.onnx ls
 
     def summary(self):
         summary(self.model_proto, self.model_path)
+
+    def check(self):
+        parser = argparse.ArgumentParser(
+            description='whether printout graph or not.')
+        # prefixing the argument with -- means it's optional
+        parser.add_argument('-p', action='store_true')
+        args = parser.parse_args(sys.argv[3:])
+
+        logging.info('checking on model: {}'.format(self.model_path))
+        logging.info('this command will check an onnx model is valid or not.')
+        onnx.checker.check_model(self.model_proto)
+        if args.p:
+            onnx.helper.printable_graph(self.model_proto.graph)
 
 
 def main():

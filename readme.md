@@ -2,7 +2,7 @@
 
 **code under construction, full functionality will be ready soon**
 
-**ONNX 浏览器** is an easy way to explore your onnx model. You can simply do these function in a onnx model very quickly:
+**onnxexp** is an easy way to explore your onnx model. You can simply do these function in a onnx model very quickly:
 
 ```
 usage: onnxexp <command> [<args>]
@@ -16,7 +16,12 @@ i.e.:
 onnxexp model.onnx search -t 'Slice'
 onnxexp model.onnx search -n '342654'
 onnxexp model.onnx ls -hl
+
+# ls model
 onnxexp model.onnx ls
+
+# check model
+onnxexp model.onnx check
 ```
 
 
@@ -75,6 +80,11 @@ function to be add:
 
 ## Update
 
+- **2021.01.06**: After a century finally I got sometime to update this package. The plan:
+  - [ ] Add params calculation (macs for onnx model);
+  - [ ] Change the command position before onnx file;
+  - [ ] Using a table to show ops with count of an onnx model;
+  - [ ] Show input and output dimension when summary model.
 - **2019.09.30**: First released this package;
 
 
