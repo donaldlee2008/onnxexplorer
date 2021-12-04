@@ -5,7 +5,7 @@ Core of onnxexplorer
 """
 import onnxruntime as ort
 from onnx import AttributeProto, TensorProto, GraphProto, ModelProto, NodeProto
-from typing import Optional, cast, Text, IO
+from typing import Dict, Optional, Union, cast, Text, IO
 from google import protobuf
 from colorama import init, Fore, Style, Back
 import os
@@ -121,21 +121,90 @@ def get_all_used_op_types(model):
     return all_op_types
 
 
-def summary(model_proto, model_p):
+def get_input_and_output_shapes(model, verbose=False) -> Union[Dict[str, list], None]:
+    input_specs = dict()
+    output_specs = dict()
+    # for input in model.graph.input:
+    #     if verbose:
+    #         print(input.name, end=": ")
+    #     # get type of input tensor
+
+    _input = model.graph.input[0] # currently only one input support
+    tensor_type = _input.type.tensor_type
+    sh = []
+    # check if it has a shape:
+    if (tensor_type.HasField("shape")):
+        # iterate through dimensions of the shape:
+        for d in tensor_type.shape.dim:
+            # the dimension may have a definite (integer) value or a symbolic identifier or neither:
+            if (d.HasField("dim_value")):
+                sh.append(d.dim_value)
+                if verbose:
+                    print(d.dim_value, end=", ")  # known dimension
+            elif (d.HasField("dim_param")):
+                # unknown dimension with symbolic name
+                if verbose:
+                    print(d.dim_param, end=", ")
+            else:
+                sh.append('?')
+                if verbose:
+                    print("?", end=", ")  # unknown dimension with no name
+        input_specs[_input.name] = sh
+    else:
+        print("unknown rank", end="")
+       
+
+    for output in model.graph.output:
+        if verbose:
+            print(output.name, end=": ")
+        # get type of input tensor
+        tensor_type = output.type.tensor_type
+        sh = []
+        # check if it has a shape:
+        if (tensor_type.HasField("shape")):
+            # iterate through dimensions of the shape:
+            for d in tensor_type.shape.dim:
+                # the dimension may have a definite (integer) value or a symbolic identifier or neither:
+                if (d.HasField("dim_value")):
+                    sh.append(d.dim_value)
+                    if verbose:
+                        print(d.dim_value, end=", ")  # known dimension
+                elif (d.HasField("dim_param")):
+                    # unknown dimension with symbolic name
+                    if verbose:
+                        print(d.dim_param, end=", ")
+                else:
+                    sh.append('?')
+                    if verbose:
+                        print("?", end=", ")  # unknown dimension with no name
+            output_specs[output.name] = sh
+        else:
+            print("unknown rank", end="")
+
+    return input_specs, output_specs
+
+
+def summary(model_proto, model_p, verbose=False):
     if isinstance(model_proto, ModelProto):
-        print(Fore.WHITE + Style.BRIGHT + 'ONNX model sum on: ' +
+        print(Fore.WHITE + Style.BRIGHT + 'Model summary on: ' +
               Style.RESET_ALL + os.path.basename(model_p))
-        print('\n')
         print('-------------------------------------------')
         print('ir version: {}'.format(model_proto.ir_version))
-
         for opi in model_proto.opset_import:
             print('opset_import: {} {}'.format(opi.version, opi.domain))
         print('producer_name: {}'.format(model_proto.producer_name))
         print('doc_string: {}'.format(model_proto.doc_string))
         all_ops = get_all_used_op_types(model_proto)
         print('all ops used: {}'.format(','.join(all_ops.keys())))
-        print('-------------------------------------------\n')
+        print('-------------------------------------------')
+
+        inp_specs, oup_specs = get_input_and_output_shapes(model_proto, verbose=verbose)
+        inp_specs = {k: (v, 'INPUT') for k, v in inp_specs.items()}
+        oup_specs = {k: (v, 'OUTPUT') for k, v in oup_specs.items()}
+        inp_specs.update(oup_specs)
+        print(Fore.GREEN + Style.BRIGHT + '\nSummary: ' + Style.RESET_ALL)
+        print(tabulate([(k,) + v for k,v in inp_specs.items()], headers=['Name', 'Shape', 'Input/Output']))
+
 
         # using table to show
         stat_data = []
@@ -143,7 +212,7 @@ def summary(model_proto, model_p):
         for k, v in all_ops.items():
             stat_data.append([k, v])
             a_nodes += v
-        print('\nStatistic table: ')
+        print(Fore.BLUE + Style.BRIGHT + '\nStatistic table: ' + Style.RESET_ALL)
         print(tabulate(stat_data, headers=[
-              'Op Name', 'Number'], tablefmt="grid"))
+              'Op Name', 'Number']))
         print('Total {} kinds ops, {} nodes.'.format(len(stat_data), a_nodes))

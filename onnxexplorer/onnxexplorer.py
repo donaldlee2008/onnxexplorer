@@ -43,53 +43,95 @@ except ImportError:
 init()
 
 
+def arg_parse():
+    """
+    parse arguments
+    :return:
+    """
+    parser = argparse.ArgumentParser(prog="onnxexp")
+    parser.add_argument('--version', '-v',
+                        action="store_true", help='show version info.')
+
+    main_sub_parser = parser.add_subparsers(dest='subparser_name')
+
+    # =============== glance part ================
+    vision_parser = main_sub_parser.add_parser(
+        'glance', help='Take a glance at your onnx model.')
+    vision_parser.add_argument('--model', '-m', help='onnx model path')
+    vision_parser.add_argument(
+        '--verbose', '-v', action='store_true', help='verbose info')
+
+    # =============== totrt part ================
+    trt_parser = main_sub_parser.add_parser(
+        'totrt', help='Convert your model to trt using onnx-tensorrt python API.')
+    trt_parser.add_argument('--model', '-m', help='onnx model path')
+    trt_parser.add_argument('--data_type', '-d', default=32,
+                            help='32, 16, 8 presents fp32, fp16, int8')
+
+    # =============== check part ================
+    check_parser = main_sub_parser.add_parser(
+        'check', help='Check your onnx model is valid or not.')
+    check_parser.add_argument('--model', '-m', help='onnx model path')
+    check_parser.add_argument('--print', action='store_true')
+
+    return parser.parse_args()
+
+
+__VERSION__ = '👍    0.2.0'
+__AUTHOR__ = '😀    Lucas Jin'
+__CONTACT__ = '😍    telegram: lucasjin'
+__DATE__ = '👉    2022.01.01, since 2019.11.11'
+__LOC__ = '👉    Shenzhen, China'
+__git__ = '👍    http://github.com/jinfagang/onnxexplorer'
+
+
+def print_welcome_msg():
+    print('-'*70)
+    print(Fore.BLUE + Style.BRIGHT + '              onnxexp ' + Style.RESET_ALL +
+          Fore.WHITE + '- Your free Onnx explorer, debug AI.' + Style.RESET_ALL)
+    print('         Author : ' + Fore.CYAN +
+          Style.BRIGHT + __AUTHOR__ + Style.RESET_ALL)
+    print('         Contact: ' + Fore.BLUE +
+          Style.BRIGHT + __CONTACT__ + Style.RESET_ALL)
+    print('         At     : ' + Fore.LIGHTGREEN_EX +
+          Style.BRIGHT + __DATE__ + Style.RESET_ALL)
+    print('         Loc    : ' + Fore.LIGHTMAGENTA_EX +
+          Style.BRIGHT + __LOC__ + Style.RESET_ALL)
+    print('         Star   : ' + Fore.MAGENTA +
+          Style.BRIGHT + __git__ + Style.RESET_ALL)
+    print('         Ver.   : ' + Fore.GREEN +
+          Style.BRIGHT + __VERSION__ + Style.RESET_ALL)
+    print('-'*70)
+    print('\n')
+
+
 class ONNXExplorer(object):
 
     def __init__(self):
-        parser = argparse.ArgumentParser(
-            description='ONNX Explorer',
-            usage='''onnxexp <command> [<args>]
-version: v0.1.3
-author: Lucas Jin @wechat: jintianiloveu
-The most commonly used onnxexp commands are:
-   ls          ls all model nodes
-   search      search and print out certain commands
-   summary     print out model summary
-   check       check a model is valid or not
-
-i.e.:
-onnxexp search model.onnx -t 'Slice'
-onnxexp search model.onnx -n '342654'
-onnxexp ls model.onnx  -hl
-onnxexp ls model.onnx 
-onnxexp check model.onnx
-onnxexp summary model.onnx
-
-''')
-        parser.add_argument('model', help='model path')
-        parser.add_argument('command', help='Subcommand to run')
-        if len(sys.argv) < 3:
-            parser.print_help()
-            logging.info(
-                'onnxexp need a command to run after the model file. see usage above.')
-            exit(0)
-        args = parser.parse_args(sys.argv[1:3])
-        self.model_path = args.model
-        if args.model != None and os.path.exists(args.model):
-            print(Style.BRIGHT + 'Exploring on onnx model: ' +
-                  Style.RESET_ALL + Fore.GREEN + self.model_path + Style.RESET_ALL)
-            # self.model_proto = load_onnx_model(self.model_path, ModelProto())
-            self.model_proto = onnx.load(self.model_path)
-            if not hasattr(self, args.command):
-                # summary
-                print('unrecognized command. -h for details.')
-                exit(1)
-            # use dispatch pattern to invoke method with same name
-            getattr(self, args.command)()
+        args = arg_parse()
+        if args.version:
+            print_welcome_msg()
         else:
-            parser.print_help()
-            print('{} does not exist or you should provide model path at first arg.'.format(
-                args.model))
+            print(args)
+            if args.subparser_name == None:
+                print('should provide at least one sub command, -h for detail.')
+                exit(-1)
+            self.model_path = args.model
+            if args.model != None and os.path.exists(args.model):
+                print(Style.BRIGHT + 'Exploring on onnx model: ' +
+                      Style.RESET_ALL + Fore.GREEN + self.model_path + Style.RESET_ALL)
+                # self.model_proto = load_onnx_model(self.model_path, ModelProto())
+                self.model_proto = onnx.load(self.model_path)
+                if args.subparser_name == 'glance':
+                    summary(self.model_proto, self.model_path, args.verbose)
+                elif args.subparser_name == 'totrt':
+                    print('this feature not fully supported for now.')
+                elif args.subparser_name == 'check':
+                    self.check(args.print)
+
+            else:
+                print('{} does not exist or you should provide model path like `onnxexp glance -m model.onnx`.'.format(
+                    args.model))
 
     def ls(self):
         parser = argparse.ArgumentParser(
@@ -117,21 +159,13 @@ onnxexp summary model.onnx
         else:
             print('search should provide type name or id to search.')
 
-    def summary(self):
-        summary(self.model_proto, self.model_path)
-
-    def check(self):
-        parser = argparse.ArgumentParser(
-            description='whether printout graph or not.')
-        # prefixing the argument with -- means it's optional
-        parser.add_argument('-p', action='store_true')
-        args = parser.parse_args(sys.argv[3:])
-
+    def check(self, p):
         logging.info('checking on model: {}'.format(self.model_path))
         logging.info('this command will check an onnx model is valid or not.')
         onnx.checker.check_model(self.model_proto)
-        if args.p:
-            onnx.helper.printable_graph(self.model_proto.graph)
+        if p:
+            a = onnx.helper.printable_graph(self.model_proto.graph)
+            print(a)
 
 
 def main():

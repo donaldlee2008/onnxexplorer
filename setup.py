@@ -23,7 +23,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='onnxexplorer',
-      version='0.1.2',
+      version='0.2.0',
       keywords=['deep learning', 'script helper', 'tools'],
       description='''
       Explorer for ONNX.
