@@ -2,6 +2,7 @@ colorama
 requests
 numpy
 future
+onnx
 deprecated
 alfred-py
 onnxruntime

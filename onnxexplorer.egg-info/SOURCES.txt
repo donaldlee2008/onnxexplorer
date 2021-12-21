@@ -1,6 +1,7 @@
 setup.py
 onnxexplorer/core.py
 onnxexplorer/onnxexplorer.py
+onnxexplorer/totrt.py
 onnxexplorer.egg-info/PKG-INFO
 onnxexplorer.egg-info/SOURCES.txt
 onnxexplorer.egg-info/dependency_links.txt
