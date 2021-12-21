@@ -46,6 +46,6 @@ setup(name='onnxexplorer',
       author_email="jinfagang19@163.com",
       url='https://github.com/jinfagang/onnxexplorer',
       platforms='any',
-      install_requires=['colorama', 'requests', 'numpy', 'future',
+      install_requires=['colorama', 'requests', 'numpy', 'future', 'onnx',
                         'deprecated', 'alfred-py', 'onnxruntime', 'tabulate']
       )
