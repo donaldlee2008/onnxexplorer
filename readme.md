@@ -32,13 +32,17 @@ The final function onnxexp will provide are:
 - [x] Glance at your onnx model info, print out input and output shapes information, and Node sets;
 - [x] Search node detail by provide node id, or node type, etc, search all `Conv` in your model;
 - [ ] Int8 convert of your onnx model;
-- [ ] Convert your model to tensorrt via onnx-tensorrt python API;
+- [x] Convert your model to tensorrt via onnx-tensorrt python API;
 - [ ] Calculate your model params and test speed via ONNXRuntime;
 
 
 
 ## Update
 
+- **2021.12.22**: Add TensorRT convert function, now you can using `onnxexp` convert your onnx model to trt engine, even with dynamic input models:
+  ```
+  onnxexp totrt -m shufflenetv2_body.onnx --min_shapes img:1x3x384x288 --opt_shapes img:2x3x384x288 --max_shapes img:4x3x384x288
+  ```
 - **2021.12.04**: Update args, re-organised readme and usage;
 - **2021.01.06**: Update search functions;
 - **2019.09.30**: First released this package;
