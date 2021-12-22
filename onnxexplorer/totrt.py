@@ -1,12 +1,7 @@
 from alfred.deploy.tensorrt.common import (
-    do_inference_v2,
     build_engine_onnx_v2,
-    allocate_buffers_v2_dynamic,
-    load_engine_from_local,
-    load_torchtrt_plugins,
     check_engine,
 )
-from alfred.deploy.tensorrt.process import preprocess_torch_v1
 from alfred.utils.log import logger
 import os
 
