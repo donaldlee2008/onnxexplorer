@@ -1,4 +1,4 @@
-Metadata-Version: 1.0
+Metadata-Version: 2.1
 Name: onnxexplorer
 Version: 0.2.2
 Summary:        Explorer for ONNX.       
@@ -6,8 +6,10 @@ Home-page: https://github.com/jinfagang/onnxexplorer
 Author: Lucas Jin
 Author-email: jinfagang19@163.com
 License: Apache 2.0
-Description: 
-              onnxexp provides easy way to explore model structure and node detail in onnx model.
-              
 Keywords: deep learning,script helper,tools
 Platform: any
+
+
+      onnxexp provides easy way to explore model structure and node detail in onnx model.
+      
+

@@ -71,7 +71,7 @@ def arg_parse():
     )
     trt_parser.add_argument("--model", "-m", help="onnx model path")
     trt_parser.add_argument(
-        "--data_type", "-d", default=32, help="32, 16, 8 presents fp32, fp16, int8"
+        "--data_type", "-d", type=int, default=32, help="32, 16, 8 presents fp32, fp16, int8"
     )
     trt_parser.add_argument("--min_shapes", nargs='+', help="min_shapes of opt_params")
     trt_parser.add_argument("--opt_shapes", nargs='+', help="opt_shapes of opt_params")

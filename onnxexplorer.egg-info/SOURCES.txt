@@ -1,4 +1,7 @@
+.gitignore
+readme.md
 setup.py
+upload_pypi.sh
 onnxexplorer/core.py
 onnxexplorer/onnxexplorer.py
 onnxexplorer/totrt.py
@@ -8,4 +11,13 @@ onnxexplorer.egg-info/dependency_links.txt
 onnxexplorer.egg-info/entry_points.txt
 onnxexplorer.egg-info/requires.txt
 onnxexplorer.egg-info/top_level.txt
+onnxexplorer/__pycache__/core.cpython-35.pyc
+onnxexplorer/__pycache__/core.cpython-36.pyc
+onnxexplorer/__pycache__/core.cpython-38.pyc
+onnxexplorer/__pycache__/onnxexplorer.cpython-35.pyc
+onnxexplorer/__pycache__/onnxexplorer.cpython-36.pyc
+onnxexplorer/__pycache__/onnxexplorer.cpython-38.pyc
+onnxexplorer/proto/onnx-ml.proto
 onnxexplorer/proto/onnx_ml_pb2.py
+onnxexplorer/proto/__pycache__/onnx_ml_pb2.cpython-35.pyc
+onnxexplorer/tests/test.py
